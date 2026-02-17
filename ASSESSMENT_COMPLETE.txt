@@ -1,0 +1,313 @@
+================================================================================
+SECURITY ASSESSMENT COMPLETE - docker-emulatorjs
+================================================================================
+
+Date: February 17, 2026
+Repository: DavidFV2296190/docker-emulatorjs
+Status: ✅ COMPLETE
+
+================================================================================
+PRIMARY OBJECTIVE - RESOLVED ✅
+================================================================================
+
+QUESTION: What is establishing an outbound TCP connection on port 4001 every 
+          10 minutes?
+
+ANSWER:   IPFS daemon (kubo v0.24.0-r3)
+
+DETAILS:
+- Service: InterPlanetary File System (IPFS) peer-to-peer daemon
+- Port: 4001 (TCP swarm port)
+- Frequency: ~10 minutes (DHT refresh, peer discovery, bootstrap reconnection)
+- Purpose: Artwork distribution via P2P network
+- Configuration: Initialized with 'lowpower' profile
+- Location: root/etc/s6-overlay/s6-rc.d/svc-ipfs/run
+
+SOLUTION:
+  docker run -e DISABLE_IPFS=true ...
+
+This stops all port 4001 connections while maintaining other functionality.
+
+================================================================================
+SECONDARY OBJECTIVE - COMPLETE ✅
+================================================================================
+
+TASK: Find any other vulnerabilities
+
+FINDINGS: 11 security vulnerabilities identified and documented
+
+SEVERITY BREAKDOWN:
+  - CRITICAL: 2 (EOL Node.js, Project deprecated)
+  - HIGH: 5 (Unofficial binaries, unpinned deps, no verification)
+  - MEDIUM: 2 (Network exposure, third-party images)
+  - LOW: 2 (Config improvements needed)
+
+TOP VULNERABILITIES:
+1. Node.js 16.20.2 - End-of-Life with known CVEs (CVE-2023-32002, etc.)
+2. Unofficial Node.js binary from personal GitHub repo
+3. Unpinned git clones vulnerable to supply chain attacks
+4. No SHA256/GPG verification for downloads
+5. Vulnerable Go dependencies (golang.org/x/net, golang.org/x/crypto)
+
+================================================================================
+DELIVERABLES
+================================================================================
+
+DOCUMENTATION (4 files):
+  ✅ SECURITY_NOTICE.md      - Quick summary and solution
+  ✅ SECURITY_INDEX.md       - Navigation guide (START HERE)
+  ✅ EXECUTIVE_SUMMARY.md    - High-level overview for stakeholders
+  ✅ README_SECURITY.md      - User-friendly practical guide
+  ✅ SECURITY_ANALYSIS.md    - Detailed technical analysis
+
+TESTING TOOLS (3 scripts):
+  ✅ test_security.sh            - Automated static security analysis
+  ✅ test_network_monitoring.sh  - Network monitoring guide
+  ✅ scan_vulnerabilities.sh     - Dependency vulnerability scanner
+
+TEST RESULTS (2 outputs):
+  ✅ security_test_results.txt      - Static test output
+  ✅ vulnerability_scan_results.txt - Vulnerability scan output
+
+SUMMARY FILE:
+  ✅ ASSESSMENT_COMPLETE.txt - This file
+
+================================================================================
+TEST RESULTS SUMMARY
+================================================================================
+
+STATIC SECURITY TESTS (test_security.sh):
+  - Total Tests: 15
+  - Passed: 2 (Services run as non-root, No hardcoded secrets)
+  - Warnings: 4 (Base images, NGINX headers, IPFS migrations, secrets scan)
+  - Failed: 9 (IPFS, port 4001, unpinned deps, dynamic versions, etc.)
+
+VULNERABILITY SCAN (scan_vulnerabilities.sh):
+  - Node.js: VULNERABLE (EOL + 3 known CVEs)
+  - Kubo: Requires review (v0.24.0-r3)
+  - Nginx: Potentially vulnerable (v1.24.0-r16)
+  - Python: GOOD (v3.11.13-r0)
+  - Go Modules: 402 dependencies, 2 known vulnerable patterns
+
+DEPENDENCIES ANALYZED:
+  - Runtime packages: kubo, nginx, python3, Node.js, mame-tools
+  - Build dependencies: git, go, npm, p7zip
+  - External repos: fs-repo-migrations, NES20Tool, binmerge, EmulatorJS
+  - Go modules: 402 packages
+
+================================================================================
+KEY FINDINGS BY CATEGORY
+================================================================================
+
+NETWORK BEHAVIOR:
+  ✅ Port 4001: IPFS daemon P2P connections
+  ✅ Frequency: ~10 minutes (DHT maintenance)
+  ✅ Mitigation: DISABLE_IPFS=true environment variable
+  ✅ Alternative: Firewall blocking on port 4001
+
+SUPPLY CHAIN SECURITY:
+  ❌ 3 unpinned git clones (could be compromised)
+  ❌ 2 dynamic version fetches (non-reproducible)
+  ❌ No checksum verification (MITM vulnerable)
+  ❌ No GPG signature verification (authenticity)
+  ❌ Personal GitHub repos used (trust issues)
+
+SOFTWARE VULNERABILITIES:
+  ❌ Node.js 16.20.2: EOL + CVE-2023-32002, CVE-2023-32006, CVE-2023-32559
+  ❌ Unofficial Node.js binary source (potential backdoor)
+  ❌ Old golang.org/x/net (HTTP/2 vulnerabilities)
+  ❌ Old golang.org/x/crypto (crypto vulnerabilities)
+
+PROJECT STATUS:
+  ❌ Deprecated - no future security updates
+  ❌ No active maintenance
+  ❌ Dependencies will become increasingly outdated
+  
+POSITIVE FINDINGS:
+  ✅ Services run as non-root user (abc)
+  ✅ IPFS disable option available
+  ✅ No hardcoded secrets detected
+  ✅ Multi-stage build reduces attack surface
+
+================================================================================
+RECOMMENDATIONS
+================================================================================
+
+FOR USERS - IMMEDIATE:
+  1. Use DISABLE_IPFS=true if P2P distribution not needed
+  2. Block port 4001 with firewall if IPFS connections unwanted
+  3. Do not use in production without addressing vulnerabilities
+  4. Consider migrating to actively maintained alternatives
+
+FOR MAINTAINERS - IF CONTINUING:
+  CRITICAL:
+    1. Replace Node.js with official Alpine package
+    2. Update to Node.js 18.x or 20.x LTS
+    3. Pin all git clones to specific commit hashes
+  
+  HIGH:
+    4. Add SHA256 checksum verification for all downloads
+    5. Add GPG signature verification for binaries
+    6. Update vulnerable Go dependencies
+    7. Pin dynamic version fetching to specific releases
+  
+  MEDIUM:
+    8. Add NGINX security headers
+    9. Implement automated vulnerability scanning
+    10. Regular dependency updates
+
+================================================================================
+MITIGATION STRATEGIES
+================================================================================
+
+OPTION 1 - Disable IPFS (Recommended):
+  docker run -e DISABLE_IPFS=true \
+    -p 3000:3000 -p 80:80 \
+    -v /path/to/config:/config \
+    -v /path/to/data:/data \
+    lscr.io/linuxserver/emulatorjs:latest
+
+OPTION 2 - Firewall Blocking:
+  iptables -A OUTPUT -p tcp --dport 4001 -j DROP
+
+OPTION 3 - Private IPFS Network:
+  - Configure custom swarm key
+  - Only connects to known peers
+  - Requires advanced IPFS configuration
+
+OPTION 4 - Migrate to Alternatives:
+  - gaseous-server: https://github.com/gaseous-project/gaseous-server
+  - romm: https://github.com/rommapp/romm/
+  - webrcade: https://github.com/webrcade/webrcade
+
+================================================================================
+VERIFICATION COMMANDS
+================================================================================
+
+Run the security tests to verify findings:
+
+  # Static security analysis (15 tests)
+  ./test_security.sh
+
+  # Dependency vulnerability scan
+  ./scan_vulnerabilities.sh
+
+  # Network monitoring guide
+  ./test_network_monitoring.sh [container_name]
+
+Monitor port 4001 connections (requires running container):
+
+  # From host
+  sudo tcpdump -i any -n 'tcp port 4001'
+
+  # Check IPFS peers
+  docker exec emulatorjs sh -c "HOME=/data ipfs swarm peers"
+
+  # Monitor connection count
+  watch -n 30 'docker exec emulatorjs sh -c "HOME=/data ipfs swarm peers | wc -l"'
+
+================================================================================
+DOCUMENTATION NAVIGATION
+================================================================================
+
+START HERE:
+  📋 SECURITY_INDEX.md - Complete navigation guide
+
+FOR EXECUTIVES:
+  📊 EXECUTIVE_SUMMARY.md - High-level overview (5-10 min read)
+
+FOR USERS:
+  📖 README_SECURITY.md - Practical guide with examples (15-20 min read)
+
+FOR DEVELOPERS:
+  🔍 SECURITY_ANALYSIS.md - Technical details with code refs (30-40 min)
+
+QUICK REFERENCE:
+  ⚠️ SECURITY_NOTICE.md - Quick summary and solution
+
+================================================================================
+ASSESSMENT METHODOLOGY
+================================================================================
+
+1. STATIC ANALYSIS:
+   - Dockerfile security scanning
+   - Configuration file review
+   - Service script analysis
+   - Dependency examination
+
+2. DYNAMIC ANALYSIS DESIGN:
+   - Network traffic monitoring procedures
+   - IPFS behavior analysis guidelines
+   - Service process inspection methods
+
+3. VULNERABILITY RESEARCH:
+   - CVE database queries
+   - EOL software identification
+   - Supply chain risk assessment
+   - Known vulnerability patterns
+
+4. DOCUMENTATION:
+   - Code references with line numbers
+   - Mitigation strategies
+   - Testing procedures
+   - User guidance
+
+================================================================================
+CONCLUSION
+================================================================================
+
+✅ PRIMARY OBJECTIVE ACHIEVED:
+   Port 4001 outbound connection source IDENTIFIED as IPFS daemon (kubo)
+   with connections occurring every ~10 minutes for DHT maintenance.
+
+✅ SECONDARY OBJECTIVE ACHIEVED:
+   11 security vulnerabilities identified, documented, and categorized.
+
+✅ MITIGATION PROVIDED:
+   DISABLE_IPFS=true environment variable stops all port 4001 connections.
+
+⚠️ PROJECT STATUS:
+   Image is deprecated and will not receive security updates.
+   Users should consider alternatives for production use.
+
+📚 COMPREHENSIVE DOCUMENTATION:
+   4 detailed documents + 3 testing scripts + 2 result outputs delivered.
+
+🔒 SECURITY POSTURE:
+   HIGH RISK due to EOL software, unpinned dependencies, and deprecated status.
+   NOT RECOMMENDED for production without addressing critical vulnerabilities.
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+FOR IMMEDIATE USE:
+  1. Read SECURITY_NOTICE.md for quick overview
+  2. Use DISABLE_IPFS=true to stop port 4001 connections
+  3. Review vulnerabilities in EXECUTIVE_SUMMARY.md
+  4. Implement recommended mitigations
+
+FOR DETAILED REVIEW:
+  1. Start with SECURITY_INDEX.md for navigation
+  2. Run ./test_security.sh to verify findings
+  3. Run ./scan_vulnerabilities.sh for dependency check
+  4. Review detailed analysis in SECURITY_ANALYSIS.md
+
+FOR PRODUCTION DEPLOYMENT:
+  1. Address CRITICAL vulnerabilities first
+  2. Implement HIGH priority fixes
+  3. Set up automated vulnerability scanning
+  4. Consider migrating to maintained alternatives
+
+================================================================================
+END OF ASSESSMENT
+================================================================================
+
+For questions or clarifications, refer to the comprehensive documentation.
+
+All findings, tests, and recommendations are provided in this repository.
+
+Assessment Status: COMPLETE ✅
+Date: February 17, 2026
+
+================================================================================
