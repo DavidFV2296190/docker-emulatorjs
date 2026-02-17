@@ -1,0 +1,95 @@
+=====================================
+Security Test Suite: docker-emulatorjs
+=====================================
+
+Test 1: Verifying IPFS (kubo) installation
+-------------------------------------------
+[0;31m[FAIL][0m IPFS (kubo) package found in Dockerfile (line 128)
+[INFO] This is the source of port 4001 outbound connections
+
+Test 2: Checking IPFS service configuration
+--------------------------------------------
+[0;31m[FAIL][0m IPFS service is configured to run automatically
+[INFO] DISABLE_IPFS environment variable is supported
+
+Test 3: Checking for port 4001 exposure in documentation
+---------------------------------------------------------
+[0;31m[FAIL][0m Port 4001 is documented for external exposure
+          - 4001:4001 #optional
+      -p 4001:4001 `#optional` \
+    | `-p 4001` | IPFS peering port, if you want to participate in the P2P network to distribute frontend artwork please forward this to the Internet |
+
+Test 4: Checking for unpinned external dependencies
+----------------------------------------------------
+[0;31m[FAIL][0m Found 3 unpinned git clone operations
+    Line 14:  git clone https://github.com/ipfs/fs-repo-migrations.git && \
+    Line 34:  git clone https://github.com/Kreeblah/NES20Tool.git && \
+    Line 55:  git clone https://github.com/ipfs/fs-repo-migrations.git && \
+
+Test 5: Checking for unsigned binary downloads
+-----------------------------------------------
+[0;31m[FAIL][0m Unsigned Node.js binary downloaded from unofficial source
+    Line 138:    https://github.com/thelamer/node-stash/raw/master/v16.20.2/x86_64/node -o \
+
+Test 6: Checking for dynamic version fetching
+----------------------------------------------
+[0;31m[FAIL][0m Found 2 instances of dynamic version fetching
+    Line 41:  BINMERGE_RELEASE=$(curl -sX GET "https://api.github.com/repos/putnam/binmerge/releases/latest" \
+    Line 80:    EMULATORJS_RELEASE=$(curl -sX GET "https://api.github.com/repos/linuxserver/emulatorjs/releases/latest" \
+
+Test 7: Checking for checksum verification
+-------------------------------------------
+[0;31m[FAIL][0m No checksum verification for downloaded files
+
+Test 8: Checking for GPG signature verification
+------------------------------------------------
+[0;31m[FAIL][0m No GPG signature verification for external downloads
+
+Test 9: Analyzing IPFS initialization configuration
+----------------------------------------------------
+[INFO] IPFS configured with 'lowpower' profile (reduces network usage)
+[1;33m[WARN][0m IPFS repository migrations are performed (could be slow)
+
+Test 10: Checking project status
+---------------------------------
+[0;31m[FAIL][0m Project is deprecated and will not receive security updates
+
+Test 11: Checking base image sources
+-------------------------------------
+[1;33m[WARN][0m Using third-party base image: ghcr.io/linuxserver/baseimage-alpine:3.14
+[1;33m[WARN][0m Using third-party base image: ghcr.io/linuxserver/baseimage-alpine:3.19
+
+Test 12: Checking exposed ports
+--------------------------------
+[INFO] Exposed ports: 80
+
+Test 13: Checking NGINX configuration
+--------------------------------------
+[INFO] NGINX configuration file found
+[1;33m[WARN][0m Missing security headers in NGINX configuration
+
+Test 14: Scanning for hardcoded secrets
+----------------------------------------
+[0;32m[PASS][0m No obvious hardcoded secrets detected
+
+Test 15: Checking service user isolation
+-----------------------------------------
+[0;32m[PASS][0m Services run as non-root user 'abc'
+
+
+=====================================
+Test Summary
+=====================================
+[0;32mPassed:  2[0m
+[1;33mWarnings: 4[0m
+[0;31mFailed:  9[0m
+
+RESULT: Security vulnerabilities detected!
+
+Key Findings:
+1. IPFS daemon (kubo) makes outbound connections on port 4001
+2. External dependencies are not pinned or verified
+3. Node.js binary downloaded from unofficial source
+4. Project is deprecated and won't receive security updates
+
+See SECURITY_ANALYSIS.md for detailed findings and recommendations.
